@@ -8,6 +8,7 @@ The goal of the series is to learn the ROS 2 stack by building each piece by han
 
 | # | Project | Status | What it covers |
 |---|---------|--------|----------------|
+| 0 | [ROS 2 basics in C++](00-ros2-basics/) | Done | Publisher, subscriber, service, custom action server, QoS |
 | 1 | [Differential-drive robot in Gazebo](project-1-diffbot/) | Done | URDF/Xacro, TF, Gazebo world and sensors, `ros_gz_bridge`, launch files, RViz2, keyboard driving |
 | 2 | SLAM mapping with `slam_toolbox` | Planned | Scan matching, loop closure, saving maps |
 | 3 | Autonomous navigation with Nav2 | Planned | Localization, costmaps, planners, recovery behaviors |
@@ -27,6 +28,9 @@ The goal of the series is to learn the ROS 2 stack by building each piece by han
 ros2-robotics-projects/
 ├── README.md
 ├── LICENSE
+├── 00-ros2-basics/
+│   ├── README.md        <- C++ publisher, subscriber, service, action
+│   └── robot_basics/    <- the ROS 2 package
 └── project-1-diffbot/
     ├── README.md        <- full write-up of project 1
     └── diffbot_sim/     <- the ROS 2 package
