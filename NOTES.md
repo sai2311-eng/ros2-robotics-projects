@@ -196,5 +196,54 @@ self.pub = self.create_publisher(String, 'hello', qos)
 ```
 With depth 3 a late subscriber got the last 3 messages, with depth 1 only the last one.
 
+## Lesson 3: Services
+
+```
+Topic:    publisher ---> subscriber              (continuous, one way, no reply)
+Service:  client --request--> server
+                 <--response--                   (one question, one answer)
+```
+- A service is for a one-off question or action ("reset the counter"), not for streaming data.
+- A service type has two parts separated by `---`: request above, response below. `std_srvs/srv/Trigger` has an empty request and the response `bool success`, `string message`.
+- A topic publisher never waits for anyone. A service client waits for the server, so a call with no server just waits until one appears.
+
+### Commands
+```bash
+ros2 service list -t                                   # services with their types
+ros2 service type /reset_counter                       # type of one service
+ros2 interface show std_srvs/srv/Trigger               # request and response fields
+ros2 service call /reset_counter std_srvs/srv/Trigger "{}"
+ros2 service call /add_two_ints example_interfaces/srv/AddTwoInts "{a: 3, b: 4}"
+```
+- `ros2 service call <name> <type> "<request as YAML>"` sends one request and prints the response.
+- Unfilled request fields default to 0 (`{a: 3}` gives 3 + 0).
+- The package is `example_interfaces` (plural). One missing letter gives `Unknown package`.
+
+### Server (Python)
+```python
+self.srv = self.create_service(AddTwoInts, 'add_two_ints', self.on_request)
+
+def on_request(self, request, response):
+    response.sum = request.a + request.b
+    return response            # forgetting this leaves the client waiting forever
+```
+- The callback gets the request and an empty response to fill, and must return the response.
+- A missing `return` does not crash anything: the server logs an error and the client waits forever.
+
+### Client (Python)
+```python
+self.client = self.create_client(AddTwoInts, 'add_two_ints')
+while not self.client.wait_for_service(timeout_sec=1.0):
+    ...                                    # wait politely for the server
+request = AddTwoInts.Request()
+request.a = int(sys.argv[1])
+future = self.client.call_async(request)
+rclpy.spin_until_future_complete(node, future)
+result = future.result().sum
+```
+- `wait_for_service` checks that the server exists. `call_async` sends the request and returns a future, a placeholder for the answer.
+- A node only receives the reply while it is spinning, so the client spins until the future is done. Blocking inside a call without spinning would never process the reply.
+- `sys.argv` holds the command-line words. A missing one gives a Python `IndexError` from your code, not from ROS.
+
 ## Next
-Services, actions and parameters.
+Actions and parameters.
